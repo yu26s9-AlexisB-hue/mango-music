@@ -27,8 +27,7 @@ public class SpecialReportsScreen {
                     showMangoMusicMapped();
                     break;
                 case 2:
-                    //@TODO - Create report
-//                    showMostPlayedAlbumsByGenre();
+                    showMostPlayedAlbumsByGenre();
                     break;
                 case 3:
                     //@TODO - Create report
@@ -100,5 +99,9 @@ public class SpecialReportsScreen {
         }
 
         InputValidator.pressEnterToContinue();
+    }
+
+    private void showMostPlayedAlbumsByGenre(){
+        reportsDao.getMostPlayedAlbumGenre();
     }
 }

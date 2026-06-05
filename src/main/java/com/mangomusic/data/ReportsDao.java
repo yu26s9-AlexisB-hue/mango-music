@@ -338,6 +338,48 @@ public class ReportsDao {
         return results;
     }
 
+    public List<ReportResult> getMostPlayedAlbumGenre(){
+        List<ReportResult> topFive = new ArrayList<>();
+        String query = """
+                select genre, album_title, artist_name, play_count, genre_rank
+                from(select ar.primary_genre as genre, al.title as album_title,
+                ar.name as artist_name, count(*) as play_count, rank () over(
+                PARTITION BY ar.primary_genre ORDER BY COUNT(*) DESC)
+                as genre_rank, count(*)over(partition by ar.primary_genre)
+                as albums_in_genre
+                from albums al
+                join artists ar ON al.artist_id = ar.artist_id
+                JOIN album_plays p ON al.album_id = p.album_id
+                GROUP BY ar.primary_genre, al.album_id, al.title, ar.name)
+                ranked_albums
+                WHERE genre_rank <= 5 AND albums_in_genre >= 5
+                ORDER BY genre, play_count DESC;
+                """;
+
+        try (Connection connection = dataManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet results = statement.executeQuery()) {
+
+            while(results.next()){
+
+                ReportResult result = new ReportResult();
+
+              result.addColumn("genre", results.getString("genre"));
+              result.addColumn("album_title", results.getString("album_title"));
+              result.addColumn("artist_name", results.getString("artist_name"));
+              result.addColumn("play_count", results.getInt("play_count"));
+              result.addColumn("genre_rank", results.getInt("genre_rank"));
+
+              topFive.add(result);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return topFive;
+    }
+
     public List<ReportResult> getGenrePopularityReport() {
         List<ReportResult> results = new ArrayList<>();
         String query = "SELECT " +
@@ -374,6 +416,7 @@ public class ReportsDao {
 
         return results;
     }
+
 
     public List<ReportResult> getUserGrowthReport() {
         List<ReportResult> results = new ArrayList<>();
