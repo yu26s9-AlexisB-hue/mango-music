@@ -24,10 +24,8 @@ public class ArtistDao {
                 "WHERE name LIKE ? " +
                 "ORDER BY name";
 
-        try {
-            Connection connection = dataManager.getConnection();
-
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try ( Connection connection = dataManager.getConnection();
+              PreparedStatement statement = connection.prepareStatement(query)) {
 
                 statement.setString(1, "%" + searchTerm + "%");
 
@@ -41,7 +39,7 @@ public class ArtistDao {
 
                     artists.add(new Artist(artistId, name, genre, formedYear));
                 }
-            }
+
 
         } catch (SQLException e) {
             System.err.println("Error searching for artists: " + e.getMessage());
